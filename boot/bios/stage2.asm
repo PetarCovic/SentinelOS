@@ -1,11 +1,17 @@
 [BITS 16]
 [ORG 0x8000]
 
+KERNEL_LOAD_ADDR equ 0x9000
+KERNEL_SECTORS equ 1
+
 stage2_start:
     ;Set up segment registers
     xor ax, ax
     mov ds, ax
     mov es, ax
+
+    ;Save boot drive passed from bootsector in DL
+    mov [bootDrive], dl
 
     ;Setup stack
     cli             ;Clear interrupt flag
@@ -20,22 +26,48 @@ stage2_start:
     mov si, stage2Msg
     call print_string
 
+    ;Load kernel from disk
+    call load_kernel
+
+    ;Jump to kernel from disk
+    jmp 0x0000:KERNEL_LOAD_ADDR
+
 hang:
     hlt
     jmp hang
 
-print_string:
-    mov ah, 0x0E
+load_kernel:
+    ;Set ES:BX= Destination address
+    xor ax, ax
+    mov es, ax
+    mov bx, KERNEL_LOAD_ADDR
 
-.next_char:
-    lodsb
-    cmp al, 0
-    je .done
-    int 0x10
-    jmp .next_char
+    ;BIOS int 0x13, function 0x02=read sectors
+    mov ah,  0x02
+    mov al, KERNEL_SECTORS
 
-.done:
+    mov ch, 0x00
+    mov cl, 0x03
+    mov dh, 0x00
+    mov dl, [bootDrive]
+
+    int 0x13
+
+    jc  disk_error
     ret
+
+disk_error:
+    mov si, diskErrorMsg
+    call print_string
+    jmp hang
+
+bootDrive:
+    db 0
+
+diskErrorMsg:
+    db "Disk read error!", 13, 10, 0
 
 stage2Msg:
     db "Stage 2 Loaded", 13, 10, 0
+
+%include  "boot/bios/utils/print.asm"

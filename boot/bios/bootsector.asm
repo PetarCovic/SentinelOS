@@ -61,19 +61,6 @@ disk_error:
     call print_string
     jmp hang
 
-print_string:
-    mov ah, 0x0E
-
-.next_char:
-    lodsb           ;Loads byte into address
-    cmp al, 0
-    je .done
-    int 0x10
-    jmp .next_char
-
-.done:
-    ret
-
 bootDrive:
     db 0
 
@@ -82,6 +69,8 @@ bootMsg:
 
 diskErrorMsg:
     db "Disk read error!", 13, 10, 0
+
+%include  "boot/bios/utils/print.asm"
 
 times 510-($-$$) db 0
 dw 0xAA55
