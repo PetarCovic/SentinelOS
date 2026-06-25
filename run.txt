@@ -7,4 +7,4 @@ ls-lh build
 
 On Windows:
 cd C:\Users\Petar\eclipse-workspaces\Portfolio\SentinelOS
-qemu-system-x86_64 -drive format=raw, file=build/sentinelOS.img -m 512M
+qemu-system-x86_64 -drive format=raw,file=build/sentinelOS.img -m 512M
