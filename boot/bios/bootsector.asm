@@ -37,6 +37,11 @@ hang:
     jmp hang
 
 load_stage2:
+    ;Set ES:BX =0000:8000 destination address
+    xor ax, ax
+    mov es, ax
+    mov bx, STAGE2_LOAD_ADDR    ;ES:BX=0000:8000
+
     ;BIOS int 0x13, function 0x02=read sectors
     mov ah, 0x02                ;read sectors
     mov al, STAGE2_SECTORS      ;number of sectors to read
@@ -46,9 +51,6 @@ load_stage2:
     mov dh, 0x00                ;head 0
     mov dl, [bootDrive]         ;boot drive from BIOS
     
-    xor ax, ax
-    mov es, ax
-    mov bx, STAGE2_LOAD_ADDR    ;ES:BX=0000:8000
     int 0x13
 
     jc disk_error               ;carry flag set=read failed
