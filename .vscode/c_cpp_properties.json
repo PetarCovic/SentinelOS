@@ -1,0 +1,18 @@
+{
+  "configurations": [
+    {
+      "name": "SentinelOS",
+      "includePath": [
+        "${workspaceFolder}/include",
+        "${workspaceFolder}/kernel",
+        "${workspaceFolder}/kernel/core"
+      ],
+      "defines": [],
+      "compilerPath": "/home/leonos/opt/cross/bin/x86_64-elf-g++",
+      "cStandard": "c17",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "linux-gcc-x64"
+    }
+  ],
+  "version": 4
+}

@@ -1,4 +1,5 @@
 #include <sentinel/terminal.hpp>
+#include <sentinel/types.hpp>
 
 namespace sentinel::terminal
 {
@@ -7,9 +8,9 @@ namespace sentinel::terminal
 
     static constexpr int VGA_WIDTH = 80;
     static constexpr int VGA_HEIGHT = 25;
-    static constexpr unsigned short VGA_COLOR = 0x0F;
-    static volatile unsigned short* const VGA_BUFFER =
-        (volatile unsigned short*)0xB8000;
+    static constexpr sentinel::u16 VGA_COLOR = 0x0F;
+    static volatile sentinel::u16* const VGA_BUFFER =
+        (volatile sentinel::u16*)0xB8000;
 
     void initialize()
     {
@@ -36,7 +37,7 @@ namespace sentinel::terminal
         
         int index=cursor_row*VGA_WIDTH+cursor_col;
 
-        VGA_BUFFER[index]=(VGA_COLOR << 8) | c;
+        VGA_BUFFER[index] = (VGA_COLOR << 8) | static_cast<sentinel::u16>(c);
 
         cursor_col++;
         
@@ -121,5 +122,5 @@ namespace sentinel::terminal
 
         cursor_row = row;
         cursor_col = col;
-}
+    }
 }
