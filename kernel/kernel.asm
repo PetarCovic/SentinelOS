@@ -1,5 +1,8 @@
 [BITS 16]
-[ORG 0x9000]
+
+global kernel_start
+extern kernel_main
+
 
 kernel_start:
     ;Setup segment registers
@@ -203,6 +206,8 @@ long_mode_entry:
 
     mov rsi, longModeMsg
     call print_string64
+
+    call kernel_main
 
 hang64:
     hlt
