@@ -1,4 +1,5 @@
 #include <sentinel/terminal.hpp>
+#include<sentinel/panic.hpp>
 
 namespace sentinel
 {

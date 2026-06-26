@@ -13,6 +13,7 @@ KERNEL_MAIN_SRC = $(KERNEL_DIR)/main.cpp
 TERMINAL_SRC = $(KERNEL_CORE_DIR)/terminal.cpp
 MEMORY_SRC=$(KERNEL_CORE_DIR)/memory.cpp
 PANIC_SRC=$(KERNEL_CORE_DIR)/panic.cpp
+LOGGER_SRC=$(KERNEL_CORE_DIR)/logger.cpp
 
 LINKER_SCRIPT = $(LINKER_DIR)/kernel.ld
 
@@ -24,6 +25,7 @@ KERNEL_MAIN_OBJ = $(BUILD_DIR)/main.o
 TERMINAL_OBJ = $(BUILD_DIR)/terminal.o
 MEMORY_OBJ=$(BUILD_DIR)/memory.o
 PANIC_OBJ=$(BUILD_DIR)/panic.o
+LOGGER_OBJ=$(BUILD_DIR)/logger.o
 
 KERNEL_ELF = $(BUILD_DIR)/kernel.elf
 KERNEL_BIN = $(BUILD_DIR)/kernel.bin
@@ -41,8 +43,7 @@ CXX = x86_64-elf-g++
 LD = x86_64-elf-ld
 OBJCOPY = x86_64-elf-objcopy
 
-CXXFLAGS = -ffreestanding -fno-exceptions -fno-rtti -mno-red-zone -nostdlib -nostdinc++ -I$(INCLUDE_DIR) -Wall -Wextra -c
-
+CXXFLAGS = -std=c++17 -ffreestanding -fno-exceptions -fno-rtti -mno-red-zone -nostdlib -nostdinc++ -I$(INCLUDE_DIR) -Wall -Wextra -c
 .PHONY: all bootsector stage2 kernel image size clean run
 
 all: image
@@ -71,8 +72,11 @@ $(MEMORY_OBJ): $(MEMORY_SRC) | $(BUILD_DIR)
 $(PANIC_OBJ): $(PANIC_SRC) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(PANIC_SRC) -o $(PANIC_OBJ)
 
-kernel: $(KERNEL_ASM_OBJ) $(KERNEL_MAIN_OBJ) $(TERMINAL_OBJ) $(MEMORY_OBJ) $(PANIC_OBJ)
-	$(LD) -T $(LINKER_SCRIPT) -o $(KERNEL_ELF) $(KERNEL_ASM_OBJ) $(KERNEL_MAIN_OBJ) $(TERMINAL_OBJ) $(MEMORY_OBJ) $(PANIC_OBJ)
+$(LOGGER_OBJ): $(LOGGER_SRC) | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(LOGGER_SRC) -o $(LOGGER_OBJ)
+
+kernel: $(KERNEL_ASM_OBJ) $(KERNEL_MAIN_OBJ) $(TERMINAL_OBJ) $(MEMORY_OBJ) $(PANIC_OBJ) $(LOGGER_OBJ)
+	$(LD) -T $(LINKER_SCRIPT) -o $(KERNEL_ELF) $(KERNEL_ASM_OBJ) $(KERNEL_MAIN_OBJ) $(TERMINAL_OBJ) $(MEMORY_OBJ) $(PANIC_OBJ) $(LOGGER_OBJ)
 	$(OBJCOPY) -O binary $(KERNEL_ELF) $(KERNEL_BIN)
 
 size: bootsector stage2 kernel
