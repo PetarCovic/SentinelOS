@@ -1,0 +1,125 @@
+#include <sentinel/terminal.hpp>
+
+namespace sentinel::terminal
+{
+    static int cursor_row;
+    static int cursor_col;
+
+    static constexpr int VGA_WIDTH = 80;
+    static constexpr int VGA_HEIGHT = 25;
+    static constexpr unsigned short VGA_COLOR = 0x0F;
+    static volatile unsigned short* const VGA_BUFFER =
+        (volatile unsigned short*)0xB8000;
+
+    void initialize()
+    {
+        cursor_row=0;
+        cursor_col=0;
+
+        clear();
+    }
+
+    void putchar(char c)
+    {
+        if(c=='\n')
+        {
+            cursor_col=0;
+            cursor_row++;
+
+            if(cursor_row>=VGA_HEIGHT)
+            {
+                cursor_row=VGA_HEIGHT-1;
+            }
+
+            return;
+        }
+        
+        int index=cursor_row*VGA_WIDTH+cursor_col;
+
+        VGA_BUFFER[index]=(VGA_COLOR << 8) | c;
+
+        cursor_col++;
+        
+        if(cursor_col>=VGA_WIDTH)
+        {
+            cursor_col=0;
+            cursor_row++;
+
+            if(cursor_row>=VGA_HEIGHT)
+            {
+                cursor_row=VGA_HEIGHT-1;
+            }
+        }        
+    }
+
+    void write(const char* text)
+    {
+        if (text == nullptr)
+        {
+            return;
+        }
+        
+        for(int i=0; text[i]!='\0'; i++)
+        {
+            putchar(text[i]);
+        }
+    }
+
+    void writeln(const char* text)
+    {
+        write(text);
+        putchar('\n');
+    }
+
+    void clear()
+    {
+        for(int r=0; r<VGA_HEIGHT; r++)
+        {
+            for(int c=0; c<VGA_WIDTH; c++)
+            {
+                int index=r*VGA_WIDTH+c;
+
+                VGA_BUFFER[index] = (VGA_COLOR << 8) | ' ';            
+            }
+        }
+
+        cursor_row=0;
+        cursor_col=0;
+    }
+
+    int get_cursor_row()
+    {
+        return cursor_row;
+    }
+
+    int get_cursor_col()
+    {
+        return cursor_col;
+    }
+
+    void set_cursor(int row, int col)
+    {
+        if (row < 0)
+        {
+            row = 0;
+        }
+
+        if (row >= VGA_HEIGHT)
+        {
+            row = VGA_HEIGHT - 1;
+        }
+
+        if (col < 0)
+        {
+            col = 0;
+        }
+
+        if (col >= VGA_WIDTH)
+        {
+            col = VGA_WIDTH - 1;
+        }
+
+        cursor_row = row;
+        cursor_col = col;
+}
+}
