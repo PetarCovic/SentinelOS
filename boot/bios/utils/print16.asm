@@ -1,4 +1,4 @@
-;print.asm
+;print16.asm
 ;16-bit BIOS string printing utility
 ;
 ;Input:
@@ -7,7 +7,7 @@
 ;Destroys:
 ;   AX, SI
 
-print_string:
+print_string16:
     mov ah, 0x0E
 
 .next_char:

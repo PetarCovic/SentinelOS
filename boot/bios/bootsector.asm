@@ -24,7 +24,7 @@ _start:
 
     ;Print boot BootMessage
     mov si, bootMsg
-    call print_string
+    call print_string16
 
     ;Load stage2 from disk
     call load_stage2
@@ -58,7 +58,7 @@ load_stage2:
 
 disk_error:
     mov si, diskErrorMsg
-    call print_string
+    call print_string16
     jmp hang
 
 bootDrive:
@@ -70,7 +70,7 @@ bootMsg:
 diskErrorMsg:
     db "Disk read error!", 13, 10, 0
 
-%include  "boot/bios/utils/print.asm"
+%include  "boot/bios/utils/print16.asm"
 
 times 510-($-$$) db 0
 dw 0xAA55

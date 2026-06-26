@@ -24,7 +24,7 @@ stage2_start:
 
     ;Print stage2 message
     mov si, stage2Msg
-    call print_string
+    call print_string16
 
     ;Load kernel from disk
     call load_kernel
@@ -58,7 +58,7 @@ load_kernel:
 
 disk_error:
     mov si, diskErrorMsg
-    call print_string
+    call print_string16
     jmp hang
 
 bootDrive:
@@ -70,4 +70,4 @@ diskErrorMsg:
 stage2Msg:
     db "Stage 2 Loaded", 13, 10, 0
 
-%include  "boot/bios/utils/print.asm"
+%include  "boot/bios/utils/print16.asm"
