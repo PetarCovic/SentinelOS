@@ -48,8 +48,8 @@ size: bootsector stage2 kernel
 	fi
 
 	@kernel_size=$$(stat -c%s $(KERNEL_BIN)); \
-	if [ "$$kernel_size" -gt 512 ]; then \
-		echo "ERROR: kernel is $$kernel_size bytes, but stage2 currently loads only 1 sector"; \
+	if [ "$$kernel_size" -gt 1024 ]; then \
+		echo "ERROR: kernel is $$kernel_size bytes, but stage2 currently loads only 2 sectors"; \
 		exit 1; \
 	else \
 		echo "OK: kernel is $$kernel_size bytes"; \
