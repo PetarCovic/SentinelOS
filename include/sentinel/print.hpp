@@ -1,6 +1,6 @@
 #pragma once
 
-namespace sentinel
+namespace sentinel::io
 {
     void print(const char* text);
 

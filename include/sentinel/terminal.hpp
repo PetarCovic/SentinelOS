@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sentinel/types.hpp>
+
 namespace sentinel::terminal
 {
     void initialize();
@@ -12,9 +14,13 @@ namespace sentinel::terminal
 
     void clear();
 
+    sentinel::u16 get_color();
+
     int get_cursor_row();
 
     int get_cursor_col();
+
+    void set_color(sentinel::u16 color);
 
     void set_cursor_row(int row);
 

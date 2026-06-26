@@ -8,7 +8,8 @@ namespace sentinel::terminal
 
     static constexpr int VGA_WIDTH = 80;
     static constexpr int VGA_HEIGHT = 25;
-    static constexpr sentinel::u16 VGA_COLOR = 0x0F;
+    static constexpr sentinel::u16 DEFAULT_COLOR = 0x0F;
+    static sentinel::u16 vga_color = DEFAULT_COLOR;
     static volatile sentinel::u16* const VGA_BUFFER =
         (volatile sentinel::u16*)0xB8000;
 
@@ -37,7 +38,7 @@ namespace sentinel::terminal
         
         int index=cursor_row*VGA_WIDTH+cursor_col;
 
-        VGA_BUFFER[index] = (VGA_COLOR << 8) | static_cast<sentinel::u16>(c);
+        VGA_BUFFER[index] = (vga_color << 8) | static_cast<sentinel::u16>(c);
 
         cursor_col++;
         
@@ -80,12 +81,17 @@ namespace sentinel::terminal
             {
                 int index=r*VGA_WIDTH+c;
 
-                VGA_BUFFER[index] = (VGA_COLOR << 8) | ' ';            
+                VGA_BUFFER[index] = (vga_color << 8) | ' ';            
             }
         }
 
         cursor_row=0;
         cursor_col=0;
+    }
+
+    sentinel::u16 get_color()
+    {
+        return vga_color;
     }
 
     int get_cursor_row()
@@ -96,6 +102,11 @@ namespace sentinel::terminal
     int get_cursor_col()
     {
         return cursor_col;
+    }
+
+    void set_color(sentinel::u16 color)
+    {
+        vga_color=color & 0xFF;
     }
 
     void set_cursor(int row, int col)
