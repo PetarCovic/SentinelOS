@@ -13,9 +13,7 @@ extern "C" void kernel_main()
 
     sentinel::logger::log_info("IDT loaded.");
 
-    sentinel::logger::log_info("About to trigger raw UD2.");
-__asm__ volatile (".byte 0x0F, 0x0B");
-sentinel::logger::log_info("This should never print.");
+    __asm__ volatile("int $13");
 
     while(true)
     {
