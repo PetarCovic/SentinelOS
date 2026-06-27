@@ -5,8 +5,11 @@ global isr0_stub
 global isr6_stub
 global isr13_stub
 global isr14_stub
-
 extern exception_dispatcher
+
+global irq1_keyboard_stub
+extern keyboard_interrupt_handler
+
 
 ; ------------------------------------------------------------
 ; Default interrupt stub
@@ -124,3 +127,52 @@ isr_common_stub:
 .hang:
     hlt
     jmp .hang
+
+; ------------------------------------------------------------
+; IRQ1 Keyboard interrupt stub
+;
+; Hardware IRQ from keyboard after PIC remap:
+; IRQ1 -> Vector 33
+;
+; This handler must return with iretq
+; ------------------------------------------------------------
+
+irq1_keyboard_stub:
+    cli
+
+    push r15
+    push r14
+    push r13
+    push r12
+    push r11
+    push r10
+    push r9
+    push r8
+    push rsi
+    push rdi
+    push rbp
+    push rdx
+    push rcx
+    push rbx
+    push rax
+
+    call keyboard_interrupt_handler
+
+    pop rax
+    pop rbx
+    pop rcx
+    pop rdx
+    pop rbp
+    pop rdi
+    pop rsi
+    pop r8
+    pop r9
+    pop r10
+    pop r11
+    pop r12
+    pop r13
+    pop r14
+    pop r15
+    
+    sti
+    iretq
