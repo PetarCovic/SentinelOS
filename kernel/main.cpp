@@ -25,6 +25,16 @@ extern "C" void kernel_main()
 
     while(true)
     {
+        sentinel::drivers::keyboard::KeyEvent event;
+
+        if(sentinel::drivers::keyboard::read_event(event))
+        {
+            if(event.pressed && event.ascii!=0)
+            {
+                sentinel::terminal::putchar(event.ascii);
+            }
+        }
+
         __asm__ volatile ("hlt");
     }
 }

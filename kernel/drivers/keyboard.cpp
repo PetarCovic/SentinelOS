@@ -3,6 +3,7 @@
 #include <sentinel/arch/x86_64/idt.hpp>
 #include <sentinel/arch/x86_64/io.hpp>
 #include <sentinel/arch/x86_64/pic.hpp>
+#include <sentinel/arch/x86_64/cpu.hpp>
 #include <sentinel/terminal.hpp>
 #include <sentinel/types.hpp>
 
@@ -16,6 +17,14 @@ namespace sentinel::drivers::keyboard
     static constexpr sentinel::u8 KEYBOARD_VECTOR = 33;
 
     static constexpr sentinel::u8 INTERRUPT_GATE = 0x8E;
+
+    static constexpr int EVENT_QUEUE_SIZE = 64;
+
+    static KeyEvent event_queue[EVENT_QUEUE_SIZE];
+
+    static int queue_head=0;
+    static int queue_tail=0;
+    static int queue_count=0;
 
     static char translate_scancode(sentinel::u8 scancode)
     {
@@ -85,25 +94,73 @@ namespace sentinel::drivers::keyboard
 
         sentinel::arch::x86_64::pic::unmask_irq(KEYBOARD_IRQ);
     }
+
+    static void push_event(const KeyEvent& event)
+    {
+        if(queue_count>=EVENT_QUEUE_SIZE)
+        {
+            return;
+        }
+
+        event_queue[queue_tail]=event;
+        queue_tail=(queue_tail+1)%EVENT_QUEUE_SIZE;
+        queue_count++;
+    }
+
+    bool has_event()
+    {
+        sentinel::u64 curr_rflags=sentinel::arch::x86_64::cpu::read_rflags();
+
+        sentinel::arch::x86_64::cpu::disable_interrupts();
+
+        bool result=queue_count>0;
+
+        sentinel::arch::x86_64::cpu::restore_rflags(curr_rflags);
+
+        return result;
+    }
+
+    bool read_event(KeyEvent& event)
+    {
+        sentinel::u64 curr_rflags=sentinel::arch::x86_64::cpu::read_rflags();
+        sentinel::arch::x86_64::cpu::disable_interrupts();
+
+        if(queue_count==0)
+        {
+            sentinel::arch::x86_64::cpu::restore_rflags(curr_rflags);
+            return false;
+        }
+        
+        event=event_queue[queue_head];
+        queue_head=(queue_head+1)%EVENT_QUEUE_SIZE;
+        queue_count--;
+
+        sentinel::arch::x86_64::cpu::restore_rflags(curr_rflags);
+
+        return true;
+    }
 }
 
 extern "C" void keyboard_interrupt_handler()
 {
     sentinel::u8 scancode =
-        sentinel::arch::x86_64::io::inb(0x60);
+        sentinel::arch::x86_64::io::inb(
+            sentinel::drivers::keyboard::KEYBOARD_DATA_PORT);
 
     bool released = (scancode & 0x80) != 0;
+    bool pressed=!released;
 
-    if (!released)
-    {
-        char character =
-            sentinel::drivers::keyboard::translate_scancode(scancode);
+    sentinel::u8 clean_scancode=static_cast<sentinel::u8>(scancode & 0x7F);
 
-        if (character != 0)
-        {
-            sentinel::terminal::putchar(character);
-        }
-    }
+    char ascii=sentinel::drivers::keyboard::translate_scancode(clean_scancode);
 
-    sentinel::arch::x86_64::pic::send_eoi(1);
+    sentinel::drivers::keyboard::KeyEvent event;
+    event.scancode=clean_scancode;
+    event.ascii=ascii;
+    event.pressed=pressed;
+
+    sentinel::drivers::keyboard::push_event(event);
+
+    sentinel::arch::x86_64::pic::send_eoi(
+        sentinel::drivers::keyboard::KEYBOARD_IRQ);
 }
