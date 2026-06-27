@@ -6,7 +6,7 @@ namespace sentinel::memory
     {
         unsigned char* d = static_cast<unsigned char*>(dest);
 
-        for(int i=0; i<count; i++)
+        for (unsigned long i = 0; i < count; i++)
         {
             d[i]=value;
         }
@@ -19,7 +19,7 @@ namespace sentinel::memory
         unsigned char* d = static_cast<unsigned char*>(dest);
         const unsigned char* s = static_cast<const unsigned char*>(src);
 
-        for(int i=0; i<count; i++)
+        for (unsigned long i = 0; i < count; i++)
         {
             d[i]=s[i];
         }
