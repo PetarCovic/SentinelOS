@@ -4,10 +4,10 @@
 
 extern "C" void default_interrupt_stub();
 
-extern "C" void default_interrupt_handler()
-{
-    sentinel::panic("Unhandled interrupt.");
-}
+extern "C" void isr0_stub();
+extern "C" void isr6_stub();
+extern "C" void isr13_stub();
+extern "C" void isr14_stub();
 
 namespace sentinel::arch::x86_64::idt
 {
@@ -58,6 +58,11 @@ namespace sentinel::arch::x86_64::idt
         {
             set_entry(i, default_interrupt_stub, 0, INTERRUPT_GATE);
         }
+
+        set_entry(0,  isr0_stub,  0, INTERRUPT_GATE);
+        set_entry(6,  isr6_stub,  0, INTERRUPT_GATE);
+        set_entry(13, isr13_stub, 0, INTERRUPT_GATE);
+        set_entry(14, isr14_stub, 0, INTERRUPT_GATE);
 
         idtr.limit = sizeof(idt) - 1;
         idtr.base = reinterpret_cast<sentinel::u64>(&idt);

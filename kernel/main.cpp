@@ -12,9 +12,8 @@ extern "C" void kernel_main()
     sentinel::arch::x86_64::idt::initialize();
 
     sentinel::logger::log_info("IDT loaded.");
-    sentinel::logger::log_warn("Triggering test interrupt...");
 
-    __asm__ volatile ("int $0x80");
+    __asm__ volatile("ud2");
 
     while(true)
     {
