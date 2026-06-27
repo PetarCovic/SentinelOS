@@ -13,7 +13,7 @@ extern "C" void kernel_main()
 
     sentinel::logger::log_info("IDT loaded.");
 
-    __asm__ volatile("int $13");
+    __asm__ volatile("int $14");
 
     while(true)
     {
