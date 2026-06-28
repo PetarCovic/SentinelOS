@@ -20,16 +20,20 @@ extern "C" void kernel_main()
     sentinel::drivers::keyboard::initialize();
     sentinel::logger::log_info("Keyboard Initialized");
 
+    sentinel::logger::log_info("Console Initialized");
+    sentinel::console::initialize();
+
     sentinel::logger::log_info("Enabling Interrupts");
     __asm__ volatile("sti");
-
-    sentinel::console::initialize();
-    sentinel::logger::log_info("Console Initialized");
 
     while(true)
     {
         sentinel::drivers::keyboard::KeyEvent event;
-        sentinel::console::handle_key_event(event);
+        
+        if(sentinel::drivers::keyboard::read_event(event))
+        {
+            sentinel::console::handle_key_event(event);
+        }
 
         __asm__ volatile ("hlt");
     }
