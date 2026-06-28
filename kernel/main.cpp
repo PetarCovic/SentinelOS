@@ -21,9 +21,8 @@ extern "C" void kernel_main()
     sentinel::logger::log_info("Keyboard Initialized");
 
     sentinel::logger::log_info("Console Initialized");
-    sentinel::console::initialize();
-
     sentinel::logger::log_info("Enabling Interrupts");
+    sentinel::console::initialize();
     __asm__ volatile("sti");
 
     while(true)
