@@ -8,6 +8,8 @@ namespace sentinel::terminal
 
     void putchar(char c);
 
+    void backspace();
+
     void write(const char* text);
 
     void writeln(const char* text);

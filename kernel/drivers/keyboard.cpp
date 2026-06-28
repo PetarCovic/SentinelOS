@@ -75,8 +75,13 @@ namespace sentinel::drivers::keyboard
             case 0x32: return 'm';
 
             // Basic control keys
-            case 0x39: return ' ';   // Space
-            case 0x1C: return '\n';  // Enter
+            case 0x39: return ' ';  // Space
+            case 0x1C: return '\n'; // Enter
+            case 0x0E: return '\b'; // Backspace
+            //case 0x2A: return;      // LShift
+            //case 0x32: return;      // RShift
+            //arrows. left and right to move cursor, up and down to go 
+            //through commands
 
             default:
                 return 0;

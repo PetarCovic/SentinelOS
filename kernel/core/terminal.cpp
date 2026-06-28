@@ -54,6 +54,29 @@ namespace sentinel::terminal
         }        
     }
 
+    void backspace()
+    {
+        if(cursor_row==0 && cursor_col==0)
+        {
+            return;
+        }
+
+        if(cursor_col>0)
+        {
+            cursor_col--;
+        }
+        else
+        {
+            cursor_row--;
+            cursor_col=VGA_WIDTH-1;
+        }
+
+
+        int index=cursor_row*VGA_WIDTH+cursor_col;
+
+    VGA_BUFFER[index] = (vga_color << 8) | static_cast<sentinel::u16>(' ');
+    }
+
     void write(const char* text)
     {
         if (text == nullptr)

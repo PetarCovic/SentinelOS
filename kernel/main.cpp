@@ -3,6 +3,7 @@
 #include <sentinel/arch/x86_64/idt.hpp>
 #include <sentinel/arch/x86_64/pic.hpp>
 #include <sentinel/drivers/keyboard.hpp>
+#include <sentinel/console.hpp>
 
 extern "C" void kernel_main()
 {
@@ -20,20 +21,15 @@ extern "C" void kernel_main()
     sentinel::logger::log_info("Keyboard Initialized");
 
     sentinel::logger::log_info("Enabling Interrupts");
-
     __asm__ volatile("sti");
+
+    sentinel::console::initialize();
+    sentinel::logger::log_info("Console Initialized");
 
     while(true)
     {
         sentinel::drivers::keyboard::KeyEvent event;
-
-        if(sentinel::drivers::keyboard::read_event(event))
-        {
-            if(event.pressed && event.ascii!=0)
-            {
-                sentinel::terminal::putchar(event.ascii);
-            }
-        }
+        sentinel::console::handle_key_event(event);
 
         __asm__ volatile ("hlt");
     }

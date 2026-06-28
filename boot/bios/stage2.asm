@@ -2,7 +2,7 @@
 [ORG 0x8000]
 
 KERNEL_LOAD_ADDR equ 0x9000
-KERNEL_SECTORS equ 16
+KERNEL_SECTORS equ 32
 
 stage2_start:
     ;Set up segment registers
