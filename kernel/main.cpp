@@ -29,7 +29,7 @@ extern "C" void kernel_main()
     {
         sentinel::drivers::keyboard::KeyEvent event;
         
-        if(sentinel::drivers::keyboard::read_event(event))
+        while(sentinel::drivers::keyboard::read_event(event))
         {
             sentinel::console::handle_key_event(event);
         }

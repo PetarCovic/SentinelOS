@@ -10,6 +10,10 @@ namespace sentinel::console
     static char command_buffer[COMMAND_BUFFER_SIZE];
     static int command_length=0;
 
+    static int cursor_index=0;
+    static int prompt_start_row=0;
+    static int prompt_start_col=0;
+
     static char completed_line[COMMAND_BUFFER_SIZE];
     static bool line_ready=false;
 
@@ -73,6 +77,46 @@ namespace sentinel::console
 
             sentinel::terminal::putchar(ascii);
         }
+    }
+
+    int get_cursor_index()
+    {
+        return cursor_index;
+    }
+
+    int get_prompt_start_row()
+    {
+        return prompt_start_row;
+    }
+
+    int get_prompt_start_col()
+    {
+        return prompt_start_col;
+    }
+
+    void set_cursor_index(int index)
+    {
+        if(index>COMMAND_BUFFER_SIZE)
+        {
+            index=COMMAND_BUFFER_SIZE;
+        }
+
+        if(index<0)
+        {
+            index=0;
+        }
+
+        cursor_index=index;
+    }
+
+    void set_prompt_start_row(int prompt_row)
+    {
+        prompt_start_row=prompt_row;
+    }
+
+    void set_prompt_start_col(int prompt_col)
+    {
+        prompt_start_col=prompt_col;
     }
 
     bool has_line()
