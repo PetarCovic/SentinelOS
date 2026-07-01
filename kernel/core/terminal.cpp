@@ -14,7 +14,7 @@ namespace sentinel::terminal
     static volatile sentinel::u16* const VGA_BUFFER =
         (volatile sentinel::u16*)0xB8000;
 
-    static constexpr float VERSION=0.1;
+    static constexpr char* VERSION="0.1";
 
     void initialize()
     {
@@ -127,7 +127,7 @@ namespace sentinel::terminal
         return cursor_col;
     }
 
-    int get_version()
+    char* get_version()
     {
         return VERSION;
     }

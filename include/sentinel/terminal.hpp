@@ -22,7 +22,7 @@ namespace sentinel::terminal
 
     int get_cursor_col();
 
-    int get_version();
+    char* get_version();
 
     void set_color(sentinel::u16 color);
 
