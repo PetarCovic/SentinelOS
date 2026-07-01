@@ -195,6 +195,9 @@ namespace sentinel::drivers::keyboard
             case 0x0A: return '9';
             case 0x0B: return '0';
 
+            //Number pad
+            //TODO: Wiill add complication because I have to see if numlock is on
+
             // Punctuation
             case 0x0C: return '-';
             case 0x0D: return '=';

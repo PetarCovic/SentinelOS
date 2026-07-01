@@ -5,6 +5,9 @@
 
 namespace sentinel::console
 {
+    static void print_prompt();
+    static void redraw_current_line();
+
     static constexpr int COMMAND_BUFFER_SIZE=128;
 
     static char command_buffer[COMMAND_BUFFER_SIZE];
@@ -24,7 +27,7 @@ namespace sentinel::console
         command_length=0;
         line_ready=false;
 
-        sentinel::terminal::write("Sentinel> ");
+        print_prompt();
     }
 
     void handle_key_event(const sentinel::drivers::keyboard::KeyEvent& event)
@@ -36,46 +39,109 @@ namespace sentinel::console
 
         char ascii=event.ascii;
 
-        if(ascii==0)
+        switch(event.key)
         {
-            return;
-        }
+            case sentinel::drivers::keyboard::KeyCode::CHARACTER: 
+                if(command_length<COMMAND_BUFFER_SIZE-1)
+                {
+                    for(int i=command_length; i>cursor_index; i--)
+                    {
+                        command_buffer[i]=command_buffer[i-1];
+                    }
 
-        if(ascii=='\n')
-        {
-            sentinel::terminal::putchar('\n');
-            command_buffer[command_length]='\0';
+                    command_buffer[cursor_index]=ascii;
 
-            sentinel::string::copy(completed_line, command_buffer);
-            line_ready=true;
-            
-            sentinel::string::clear(command_buffer);
-            command_length=0;
+                    command_length++;
+                    cursor_index++;
+                    command_buffer[command_length]='\0';
 
-            sentinel::terminal::write("Sentinel> ");
-            return;
-        }
+                    redraw_current_line();
+                }
+                break;
 
-        if(ascii=='\b')
-        {
-            if(command_length>0)
-            {
-                command_length--;
+            case sentinel::drivers::keyboard::KeyCode::ENTER:
+                sentinel::terminal::putchar('\n');
                 command_buffer[command_length]='\0';
 
-                sentinel::terminal::backspace();
-            }
+                sentinel::string::copy(completed_line, command_buffer);
+                line_ready=true;
+            
+                sentinel::string::clear(command_buffer);
+                command_length=0;
+                cursor_index=0;
 
-            return;
-        }
+                command_buffer[0]='\0';
 
-        if(command_length<COMMAND_BUFFER_SIZE-1)
-        {
-            command_buffer[command_length]=ascii;
-            command_length++;
-            command_buffer[command_length]='\0';
+                print_prompt();
+                break;
 
-            sentinel::terminal::putchar(ascii);
+            case sentinel::drivers::keyboard::KeyCode::BACKSPACE:
+                if(cursor_index>0)
+                {
+                    for(int i=cursor_index; command_buffer[i]!='\0'; i++)
+                    {
+                        command_buffer[i-1]=command_buffer[i];
+                    }
+
+                    command_length--;
+                    cursor_index--;
+
+                    command_buffer[command_length]='\0';
+
+                    redraw_current_line();
+                }
+
+                break;
+
+            case sentinel::drivers::keyboard::KeyCode::DELETE:
+                if(cursor_index<command_length)
+                {
+                    for(int i=cursor_index; command_buffer[i]!='\0'; i++)
+                    {
+                        command_buffer[i]=command_buffer[i+1];
+                    }
+
+                    command_length--;
+
+                    command_buffer[command_length]='\0';
+
+                    redraw_current_line();
+                }
+
+
+
+                break;
+            case sentinel::drivers::keyboard::KeyCode::LEFT_ARROW:
+                if(cursor_index>0)
+                {
+                    cursor_index--;
+                    sentinel::terminal::set_cursor(prompt_start_row, 
+                        prompt_start_col+cursor_index);
+                }
+                break;
+
+            case sentinel::drivers::keyboard::KeyCode::RIGHT_ARROW:
+                if(cursor_index<command_length)
+                {
+                    cursor_index++;
+                    sentinel::terminal::set_cursor(prompt_start_row, 
+                        prompt_start_col+cursor_index);
+                }
+                break;
+
+            case sentinel::drivers::keyboard::KeyCode::HOME:
+            cursor_index=0;
+                sentinel::terminal::set_cursor(prompt_start_row, prompt_start_col);
+                break;
+
+            case sentinel::drivers::keyboard::KeyCode::END:
+                cursor_index=command_length;
+                sentinel::terminal::set_cursor(prompt_start_row, 
+                    prompt_start_col+command_length);
+                break;
+
+            default:
+                return;
         }
     }
 
@@ -96,9 +162,9 @@ namespace sentinel::console
 
     void set_cursor_index(int index)
     {
-        if(index>COMMAND_BUFFER_SIZE)
+        if(index>command_length)
         {
-            index=COMMAND_BUFFER_SIZE;
+            index=command_length;
         }
 
         if(index<0)
@@ -141,5 +207,22 @@ namespace sentinel::console
         line_ready=false;
 
         return true;
+    }
+
+    static void print_prompt()
+    {
+        sentinel::terminal::write("Sentinel> ");
+        prompt_start_row=sentinel::terminal::get_cursor_row();
+        prompt_start_col=sentinel::terminal::get_cursor_col();
+        cursor_index=0;
+    }
+
+    static void redraw_current_line()
+    {
+        sentinel::terminal::set_cursor(prompt_start_row, prompt_start_col);
+        sentinel::terminal::write(command_buffer);
+        sentinel::terminal::write(" ");
+        sentinel::terminal::set_cursor(prompt_start_row, 
+            prompt_start_col+cursor_index);
     }
 }
