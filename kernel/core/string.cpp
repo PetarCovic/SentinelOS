@@ -97,6 +97,16 @@ namespace sentinel::string
         dest[i]='\0';
     }
 
+    bool isEmpty(char* str)
+    {
+        if(length(str)>0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     bool starts_with(const char* str, const char* substr)
     {
         if(str==nullptr)

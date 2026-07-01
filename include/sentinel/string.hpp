@@ -12,6 +12,8 @@ namespace sentinel::string
 
     void concat(char* dest, const char* src);
 
+    bool isEmpty(char* str);
+
     bool starts_with(const char* str, const char* substr);
 
     void remove_last(char* str);
