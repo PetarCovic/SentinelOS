@@ -3,6 +3,8 @@
 
 namespace sentinel::string
 {
+    static char to_lower_ascii(char c);
+
     sentinel::u64 length(const char* str)
     {
         if(str==nullptr)
@@ -37,15 +39,51 @@ namespace sentinel::string
             return false;
         }
 
-        for(int i=0; str1[i]!='\0'; i++)
+        int i=0;
+
+        while(str1[i]!='\0' && str2[i]!='\0')
         {
             if(str1[i]!=str2[i])
             {
                 return false;
             }
+
+            i++;
         }
 
-        return true;
+        return str1[i]=='\0' && str2[i]=='\0';
+    }
+
+    bool equals_ignore_case(const char* str1, const char* str2)
+    {
+        if(str1==nullptr && str2==nullptr)
+        {
+            return true;
+        }
+
+        if(str1==nullptr || str2==nullptr)
+        {
+            return false;
+        }
+
+        if(length(str1)!=length(str2))
+        {
+            return false;
+        }
+
+        int i=0;
+
+        while(str1[i]!='\0' && str2[i]!='\0')
+        {
+            if(to_lower_ascii(str1[i])!=to_lower_ascii(str2[i]))
+            {
+                return false;
+            }
+
+            i++;
+        }
+
+        return str1[i]=='\0' && str2[i]=='\0';
     }
 
     void copy(char* dest, const char* src)
@@ -97,7 +135,7 @@ namespace sentinel::string
         dest[i]='\0';
     }
 
-    bool isEmpty(char* str)
+    bool isEmpty(const char* str)
     {
         if(length(str)>0)
         {
@@ -122,6 +160,28 @@ namespace sentinel::string
         for(int i=0; substr[i]!='\0'; i++)
         {
             if(str[i]!=substr[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool starts_with_ignore_case(const char* str, const char* substr)
+    {
+        if(str==nullptr)
+        {
+            return false;
+        }
+
+        if(substr==nullptr)
+        {
+            return false;
+        }
+
+        for(int i=0; substr[i]!='\0'; i++)
+        {
+            if(to_lower_ascii(str[i])!=to_lower_ascii(substr[i]))
             {
                 return false;
             }
@@ -154,5 +214,15 @@ namespace sentinel::string
         }
 
         str[0]='\0';
+    }
+
+    static char to_lower_ascii(char c)
+    {
+        if(c>='A' && c<='Z')
+        {
+            return static_cast<char>(c-'A'+'a');
+        }
+
+        return c;
     }
 }

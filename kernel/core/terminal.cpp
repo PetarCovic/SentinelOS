@@ -14,6 +14,8 @@ namespace sentinel::terminal
     static volatile sentinel::u16* const VGA_BUFFER =
         (volatile sentinel::u16*)0xB8000;
 
+    static constexpr float VERSION=0.1;
+
     void initialize()
     {
         clear();
@@ -123,6 +125,11 @@ namespace sentinel::terminal
     int get_cursor_col()
     {
         return cursor_col;
+    }
+
+    int get_version()
+    {
+        return VERSION;
     }
 
     void set_color(sentinel::u16 color)

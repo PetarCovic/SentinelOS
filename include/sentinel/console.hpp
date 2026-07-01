@@ -10,5 +10,9 @@ namespace sentinel::console
 
     bool has_line();
 
+    int get_command_buffer_size();
+
     bool read_line(char* out_buffer);
+
+    void print_prompt();
 }

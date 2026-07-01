@@ -4,6 +4,7 @@
 #include <sentinel/arch/x86_64/pic.hpp>
 #include <sentinel/drivers/keyboard.hpp>
 #include <sentinel/console.hpp>
+#include <sentinel/shell.hpp>
 
 extern "C" void kernel_main()
 {
@@ -20,9 +21,9 @@ extern "C" void kernel_main()
     sentinel::drivers::keyboard::initialize();
     sentinel::logger::log_info("Keyboard Initialized");
 
+    sentinel::console::initialize();
     sentinel::logger::log_info("Console Initialized");
     sentinel::logger::log_info("Enabling Interrupts");
-    sentinel::console::initialize();
     __asm__ volatile("sti");
 
     while(true)
@@ -32,6 +33,14 @@ extern "C" void kernel_main()
         while(sentinel::drivers::keyboard::read_event(event))
         {
             sentinel::console::handle_key_event(event);
+        }
+
+        char command[sentinel::console::get_command_buffer_size()];
+
+        if(sentinel::console::read_line(command))
+        {
+            sentinel::shell::execute_command(command);
+            sentinel::console::print_prompt();
         }
 
         __asm__ volatile ("hlt");

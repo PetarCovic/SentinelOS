@@ -5,7 +5,7 @@
 
 namespace sentinel::console
 {
-    static void print_prompt();
+    void print_prompt();
     static void redraw_current_line();
     static void save_history_command();
     static void load_history_entry(int index);
@@ -99,7 +99,6 @@ namespace sentinel::console
 
                 command_buffer[0]='\0';
 
-                print_prompt();
                 break;
 
             case sentinel::drivers::keyboard::KeyCode::BACKSPACE:
@@ -222,6 +221,11 @@ namespace sentinel::console
         return prompt_start_col;
     }
 
+    int get_command_buffer_size()
+    {
+        return COMMAND_BUFFER_SIZE;
+    }
+
     void set_cursor_index(int index)
     {
         if(index>command_length)
@@ -271,7 +275,7 @@ namespace sentinel::console
         return true;
     }
 
-    static void print_prompt()
+    void print_prompt()
     {
         sentinel::terminal::write("Sentinel> ");
         prompt_start_row=sentinel::terminal::get_cursor_row();
