@@ -1,5 +1,6 @@
 #include <sentinel/terminal.hpp>
 #include <sentinel/types.hpp>
+#include <sentinel/arch/x86_64/io.hpp>
 
 namespace sentinel::terminal
 {
@@ -15,9 +16,6 @@ namespace sentinel::terminal
 
     void initialize()
     {
-        cursor_row=0;
-        cursor_col=0;
-
         clear();
     }
 
@@ -25,12 +23,11 @@ namespace sentinel::terminal
     {
         if(c=='\n')
         {
-            cursor_col=0;
-            cursor_row++;
+            set_cursor(cursor_row+1, 0);
 
             if(cursor_row>=VGA_HEIGHT)
             {
-                cursor_row=VGA_HEIGHT-1;
+                set_cursor(VGA_HEIGHT-1, cursor_col);
             }
 
             return;
@@ -39,19 +36,22 @@ namespace sentinel::terminal
         int index=cursor_row*VGA_WIDTH+cursor_col;
 
         VGA_BUFFER[index] = (vga_color << 8) | static_cast<sentinel::u16>(c);
-
-        cursor_col++;
         
-        if(cursor_col>=VGA_WIDTH)
+        int next_col=cursor_col+1;
+
+        if(next_col>=VGA_WIDTH)
         {
-            cursor_col=0;
-            cursor_row++;
+            set_cursor(cursor_row+1, 0);
 
             if(cursor_row>=VGA_HEIGHT)
             {
-                cursor_row=VGA_HEIGHT-1;
+                set_cursor(VGA_HEIGHT-1, cursor_col);
             }
-        }        
+        }     
+        else
+        {
+            set_cursor(cursor_row, cursor_col+1);
+        }
     }
 
     void backspace()
@@ -63,18 +63,17 @@ namespace sentinel::terminal
 
         if(cursor_col>0)
         {
-            cursor_col--;
+            set_cursor(cursor_row, cursor_col-1);
         }
         else
         {
-            cursor_row--;
-            cursor_col=VGA_WIDTH-1;
+            set_cursor(cursor_row-1, VGA_WIDTH-1);
         }
 
 
         int index=cursor_row*VGA_WIDTH+cursor_col;
 
-    VGA_BUFFER[index] = (vga_color << 8) | static_cast<sentinel::u16>(' ');
+        VGA_BUFFER[index] = (vga_color << 8) | static_cast<sentinel::u16>(' ');
     }
 
     void write(const char* text)
@@ -108,8 +107,7 @@ namespace sentinel::terminal
             }
         }
 
-        cursor_row=0;
-        cursor_col=0;
+        set_cursor(0, 0);
     }
 
     sentinel::u16 get_color()
@@ -156,5 +154,24 @@ namespace sentinel::terminal
 
         cursor_row = row;
         cursor_col = col;
+
+        sentinel::u16 position=
+            static_cast<sentinel::u16>(cursor_row*VGA_WIDTH+cursor_col);
+
+        static constexpr sentinel::u16 VGA_CONTROL_PORT=0x3D4;   //VGA cursor control port
+        static constexpr sentinel::u16 VGA_DATA_PORT=0x3D5;      //VGA cursor data port
+
+        static constexpr sentinel::u16 VGA_CURSOR_LOW_REGISTER=0x0F;
+        static constexpr sentinel::u16 VGA_CURSOR_HIGH_REGISTER=0x0E;
+
+        //Low byte
+        sentinel::arch::x86_64::io::outb(VGA_CONTROL_PORT, VGA_CURSOR_LOW_REGISTER);
+        sentinel::arch::x86_64::io::outb(VGA_DATA_PORT, 
+            static_cast<sentinel::u8>(position & 0xFF));
+
+        //High byte
+        sentinel::arch::x86_64::io::outb(VGA_CONTROL_PORT, VGA_CURSOR_HIGH_REGISTER);
+        sentinel::arch::x86_64::io::outb(VGA_DATA_PORT, 
+            static_cast<sentinel::u8>((position >> 8) & 0xFF));
     }
 }

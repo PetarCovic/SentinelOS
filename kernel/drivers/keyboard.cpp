@@ -82,6 +82,8 @@ namespace sentinel::drivers::keyboard
             //case 0x32: return;      // RShift
             //arrows. left and right to move cursor, up and down to go 
             //through commands
+            //Go through and allow for every key to have functionality. Or at least
+            //Every common key
 
             default:
                 return 0;
