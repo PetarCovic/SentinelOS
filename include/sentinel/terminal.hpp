@@ -22,6 +22,8 @@ namespace sentinel::terminal
 
     int get_cursor_col();
 
+    int get_version();
+
     void set_color(sentinel::u16 color);
 
     void set_cursor_row(int row);

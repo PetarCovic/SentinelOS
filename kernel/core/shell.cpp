@@ -68,7 +68,10 @@ namespace sentinel::shell
 
     static void execute_version()
     {
-        sentinel::terminal::writeln("SentinelOS Version: ");
+        sentinel::terminal::write("SentinelOS Version: ");
+        char version=static_cast<char>(sentinel::terminal::get_version());
+        sentinel::terminal::putchar(version);
+        sentinel::terminal::putchar('\n');
     }
 
     static void execute_echo(const char* command)
@@ -76,6 +79,7 @@ namespace sentinel::shell
         for(int i=5; command[i]!='\0'; i++)
         {
             sentinel::terminal::putchar(command[i]);
+            sentinel::terminal::putchar('\n');
         }
     }
 
