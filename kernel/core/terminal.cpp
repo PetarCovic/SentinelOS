@@ -97,6 +97,82 @@ namespace sentinel::terminal
         putchar('\n');
     }
 
+    void write_u64(sentinel::u64 number)
+    {
+        char buffer[21]; // max u64 decimal digits = 20, plus null terminator
+        int index = 0;
+
+        if(number == 0)
+        {
+            putchar('0');
+            return;
+        }
+
+        while(number > 0)
+        {
+            sentinel::u64 digit = number % 10;
+            buffer[index] = static_cast<char>('0' + digit);
+            index++;
+            number /= 10;
+        }
+
+        for(int i = index - 1; i >= 0; i--)
+        {
+            putchar(buffer[i]);
+        }
+    }
+
+    void writeln_u64(sentinel::u64 number)
+    {
+        write_u64(number);
+        putchar('\n');
+    }
+
+    void write_i64(sentinel::i64 number)
+    {
+        if(number < 0)
+        {
+            putchar('-');
+            write_u64(static_cast<sentinel::u64>(-number));
+            return;
+        }
+
+        write_u64(static_cast<sentinel::u64>(number));
+    }
+
+    void writeln_i64(sentinel::i64 number)
+    {
+        write_i64(number);
+        putchar('\n');
+    }
+
+    void write_hex(sentinel::u64 number)
+    {
+        static constexpr char HEX_DIGITS[] = "0123456789ABCDEF";
+
+        write("0x");
+
+        bool started = false;
+
+        for(int shift = 60; shift >= 0; shift -= 4)
+        {
+            sentinel::u8 nibble =
+                static_cast<sentinel::u8>((number >> shift) & 0xF);
+
+            if(nibble != 0 || started || shift == 0)
+            {
+                putchar(HEX_DIGITS[nibble]);
+                started = true;
+            }
+        }
+    }
+
+    void writeln_hex(sentinel::u64 number)
+    {
+        write_hex(number);
+        putchar('\n');
+    }
+
     void clear()
     {
         for(int r=0; r<VGA_HEIGHT; r++)

@@ -19,6 +19,8 @@ kernel_start:
     ;Make sure string instructions move forward
     cld
 
+    call detect_memory_map
+
     ;Print kernel message
     mov si, kernelMsg
     call print_string16
@@ -74,6 +76,70 @@ gdt_descriptor:
     dw gdt_end - gdt_start - 1
     dd gdt_start
 
+detect_memory_map:
+    pusha
+    push es
+
+    xor ax, ax
+    mov es, ax
+
+    mov di, MEMORY_MAP_BUFFER
+    xor ebx, ebx
+
+    mov word [e820_entry_count], 0
+
+.e820_next_entry:
+    cmp word [e820_entry_count], MAX_E820_ENTRIES
+    jae .e820_done
+
+    ; Request ACPI 3.0 extended attributes.
+    ; If BIOS only returns 20 bytes, this stays as 1.
+    mov dword [es:di + 20], 1
+
+    mov eax, 0xE820
+    mov edx, SMAP_SIGNATURE
+    mov ecx, E820_ENTRY_SIZE
+    int 0x15
+
+    jc .e820_done
+
+    cmp eax, SMAP_SIGNATURE
+    jne .e820_done
+
+    cmp ecx, 20
+    jb .e820_done
+
+    ; Skip entries with length == 0.
+    mov eax, [es:di + 8]
+    or eax, [es:di + 12]
+    jz .skip_entry
+
+    inc word [e820_entry_count]
+    add di, E820_ENTRY_SIZE
+
+.skip_entry:
+    test ebx, ebx
+    jne .e820_next_entry
+
+.e820_done:
+    ; BootInfo layout:
+    ; offset 0: MemoryMapEntry* memory_map      8 bytes
+    ; offset 8: u32 memory_map_entry_count     4 bytes
+
+    mov dword [BOOT_INFO_ADDR + 0], MEMORY_MAP_BUFFER
+    mov dword [BOOT_INFO_ADDR + 4], 0
+
+    xor eax, eax
+    mov ax, [e820_entry_count]
+    mov dword [BOOT_INFO_ADDR + 8], eax
+
+    pop es
+    popa
+    ret
+
+e820_entry_count:
+    dw 0
+
 CODE32_SEG equ gdt_code32-gdt_start
 CODE64_SEG equ gdt_code64-gdt_start
 DATA_SEG equ gdt_data-gdt_start
@@ -85,6 +151,14 @@ PD_BASE equ 0x3000
 PAGE_PRESENT equ 1
 PAGE_WRITE equ 2
 PAGE_SIZE equ 1<<7
+
+MEMORY_MAP_BUFFER equ 0x5000
+BOOT_INFO_ADDR    equ 0x7000
+
+MAX_E820_ENTRIES  equ 32
+E820_ENTRY_SIZE   equ 24
+
+SMAP_SIGNATURE    equ 0x534D4150
 
 [BITS 32]
 init_pm:
@@ -207,6 +281,7 @@ long_mode_entry:
     mov rsi, longModeMsg
     call print_string64
 
+    mov edi, BOOT_INFO_ADDR
     call kernel_main
 
 hang64:

@@ -11,8 +11,19 @@ namespace sentinel::terminal
     void backspace();
 
     void write(const char* text);
-
     void writeln(const char* text);
+
+    void write_u64(sentinel::u64 number);
+    void writeln_u64(sentinel::u64 number);
+
+    void write_i64(sentinel::i64 number);
+    void writeln_i64(sentinel::i64 number);
+
+    void write_hex(sentinel::u64 number);
+    void writeln_hex(sentinel::u64 number);
+
+    void write_fixed_2(sentinel::i64 scaled_value);
+    void writeln_fixed_2(sentinel::i64 scaled_value);
 
     void clear();
 

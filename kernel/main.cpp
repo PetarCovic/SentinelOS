@@ -5,12 +5,14 @@
 #include <sentinel/drivers/keyboard.hpp>
 #include <sentinel/console.hpp>
 #include <sentinel/shell.hpp>
+#include <sentinel/boot/memory_map.hpp>
 
-extern "C" void kernel_main()
+extern "C" void kernel_main(const sentinel::boot::BootInfo* boot_info)
 {
     sentinel::terminal::initialize();
     sentinel::logger::log_info("SentinelOS Kernel Loaded");
     sentinel::logger::log_info("Terminal Initialized");
+    sentinel::boot::print_memory_map(boot_info);
 
     sentinel::arch::x86_64::idt::initialize();
     sentinel::logger::log_info("IDT Initialized.");
