@@ -31,10 +31,37 @@ namespace sentinel::boot
             sentinel::terminal::writeln_hex(memory_map.length);
 
             sentinel::terminal::write("Type: ");
-            sentinel::terminal::writeln_u64(memory_map.type);
+            sentinel::terminal::write_u64(memory_map.type);
+            sentinel::terminal::write(" (");
+            sentinel::terminal::write(memory_type_to_string(memory_map.type));
+            sentinel::terminal::writeln(")");
 
             sentinel::terminal::write("Attributes: ");
             sentinel::terminal::writeln_u64(memory_map.attributes);
+        }
+    }
+
+    const char* memory_type_to_string(MemoryType type)
+    {
+        switch(type)
+        {
+            case MemoryType::USABLE:
+                return "Usable";
+
+            case MemoryType::RESERVED:
+                return "Reserved";
+            
+            case MemoryType::ACPI_RECLAIMABLE:
+                return "ACPI Reclaimable";
+
+            case MemoryType::ACPI_NVS:
+                return "ACPI NVS";
+
+            case MemoryType::BAD_MEMORY:
+                return "Bad Memory";
+
+            default:
+                return "Unknown";
         }
     }
 }

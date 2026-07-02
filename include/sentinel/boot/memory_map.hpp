@@ -37,4 +37,6 @@ namespace sentinel::boot
     } __attribute__ ((packed));
 
     void print_memory_map(const BootInfo* boot_info);
+
+    const char* memory_type_to_string(MemoryType type);
 }
