@@ -3,6 +3,7 @@
 #include <sentinel/string.hpp>
 #include <sentinel/terminal.hpp>
 #include <sentinel/panic.hpp>
+#include <sentinel/memory/physical_page_allocator.hpp>
 
 namespace sentinel::shell
 {
@@ -13,6 +14,11 @@ namespace sentinel::shell
     static void execute_panic_test();
     static void execute_idt_test();
     static void command_not_found();
+    static void execute_memstats();
+    static void execute_alloc_page();
+    static void execute_free_page();
+
+    static sentinel::u64 last_test_page=0;
 
     void execute_command(const char* command)
     {
@@ -45,6 +51,18 @@ namespace sentinel::shell
         {
             execute_idt_test();
         }
+        else if(sentinel::string::equals_ignore_case(command, "memstats"))
+        {
+            execute_memstats();
+        }
+        else if(sentinel::string::equals_ignore_case(command, "alloc-page"))
+        {
+            execute_alloc_page();
+        }
+        else if(sentinel::string::equals_ignore_case(command, "free-page"))
+        {
+            execute_free_page();
+        }
         else
         {
             command_not_found();
@@ -59,6 +77,9 @@ namespace sentinel::shell
         sentinel::terminal::writeln("ECHO:         Displays messages");
         sentinel::terminal::writeln("PANIC-TEST:   Performs a panic test");
         sentinel::terminal::writeln("IDT-TEST:     Performs an idt test");
+        sentinel::terminal::writeln("MEMSTATS:     Prints physical page allocator stats");
+        sentinel::terminal::writeln("ALLOC-PAGE:   Allocates one test physical page");
+        sentinel::terminal::writeln("FREE-PAGE:    Frees the last allocated test page");
     }
 
     static void execute_clear()
@@ -94,6 +115,35 @@ namespace sentinel::shell
         __asm__ volatile("ud2");
 
         sentinel::terminal::writeln("IDT test returned");
+    }
+
+    static void execute_memstats()
+    {
+        sentinel::memory::physical_page_allocator::print_stats();
+    }
+
+    static void execute_alloc_page()
+    {
+        last_test_page=sentinel::memory::physical_page_allocator::allocate_page();
+
+        sentinel::terminal::write("Allocated page: ");
+        sentinel::terminal::writeln_hex(last_test_page);
+    }
+
+    static void execute_free_page()
+    {
+        if(last_test_page==0)
+        {
+            sentinel::terminal::writeln("No test page allocated");
+            return;
+        }
+
+        sentinel::memory::physical_page_allocator::free_page(last_test_page);
+
+        sentinel::terminal::write("Freed page: ");
+        sentinel::terminal::writeln_hex(last_test_page);
+
+        last_test_page=0;
     }
 
     static void command_not_found()

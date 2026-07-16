@@ -19,7 +19,7 @@ namespace sentinel::memory::physical_page_allocator
         const PhysicalMemoryRegion* usable_regions
             =sentinel::memory::get_usable_regions();
 
-        for(sentinel::u32 i=0; i<sentinel::memory::get_usable_region_count(); i++)
+        for(sentinel::u64 i=0; i<sentinel::memory::get_usable_region_count(); i++)
         {
             mark_region_free(usable_regions[i].start, usable_regions[i].end);
         }
@@ -27,7 +27,7 @@ namespace sentinel::memory::physical_page_allocator
         const ReservedMemoryRegion* reserved_regions
             =sentinel::memory::get_reserved_regions();
 
-        for(sentinel::u32 i=0; i<sentinel::memory::get_reserved_region_count(); i++)
+        for(sentinel::u64 i=0; i<sentinel::memory::get_reserved_region_count(); i++)
         {
             mark_region_used(reserved_regions[i].start, reserved_regions[i].end);
         }
@@ -38,23 +38,11 @@ namespace sentinel::memory::physical_page_allocator
         sentinel::terminal::write("Total pages tracked: ");
         sentinel::terminal::writeln_u64(TOTAL_PAGES);
 
-        sentinel::u64 free_count=0;
-        sentinel::u64 used_count=0;
+        sentinel::u64 free_count=get_free_page_count();
+        sentinel::u64 used_count=get_used_page_count();
 
-        for(sentinel::u32 i=0; i<TOTAL_PAGES; i++)
-        {
-            if(is_page_used(PAGE_SIZE*i))
-            {
-                used_count++;
-            }
-            else
-            {
-                free_count++;
-            }
-        }
-
-        sentinel::u32 free_mib=(free_count*PAGE_SIZE)/1048576;
-        sentinel::u32 used_mib=(used_count*PAGE_SIZE)/1048576;
+        sentinel::u64 free_mib=(free_count*PAGE_SIZE)/1048576;
+        sentinel::u64 used_mib=(used_count*PAGE_SIZE)/1048576;
 
         sentinel::terminal::write("Free Pages: ");
         sentinel::terminal::writeln_u64(free_count);
@@ -62,10 +50,10 @@ namespace sentinel::memory::physical_page_allocator
         sentinel::terminal::write("Used Pages: ");
         sentinel::terminal::writeln_u64(used_count);
 
-        sentinel::terminal::write("Free Pages in MiB: ");
+        sentinel::terminal::write("Free Memory in MiB: ");
         sentinel::terminal::writeln_u64(free_mib);
 
-        sentinel::terminal::write("Used Pages in MiB: ");
+        sentinel::terminal::write("Used Memory in MiB: ");
         sentinel::terminal::writeln_u64(used_mib);
     }
 
@@ -128,7 +116,7 @@ namespace sentinel::memory::physical_page_allocator
 
     sentinel::u64 allocate_page()
     {
-        for(sentinel::u32 i=0; i<TOTAL_PAGES; i++)
+        for(sentinel::u64 i=0; i<TOTAL_PAGES; i++)
         {
             if(is_page_free(i*PAGE_SIZE))
             {
@@ -143,17 +131,80 @@ namespace sentinel::memory::physical_page_allocator
 
     void free_page(sentinel::u64 page_address)
     {
-        if(!sentinel::memory::is_page_aligned(page_address))
+        if(!owns_page(page_address))
         {
             return;
         }
 
-        if(page_address>=MAX_PHYSICAL_MEMORY)
+        if(is_reserved_page(page_address))
         {
             return;
         }
 
         mark_page_free(page_address);
+    }
+
+    sentinel::u64 get_free_page_count()
+    {
+        sentinel::u64 free_count=0;
+
+        for(sentinel::u64 i=0; i<TOTAL_PAGES; i++)
+        {
+            if(!is_page_used(PAGE_SIZE*i))
+            {
+                free_count++;
+            }
+        }
+
+        return free_count;
+    }
+
+    sentinel::u64 get_used_page_count()
+    {
+        sentinel::u64 used_count=0;
+
+        for(sentinel::u64 i=0; i<TOTAL_PAGES; i++)
+        {
+            if(is_page_used(PAGE_SIZE*i))
+            {
+                used_count++;
+            }
+        }
+
+        return used_count;
+    }
+
+    sentinel::u64 get_total_page_count()
+    {
+        return TOTAL_PAGES;
+    }
+
+    bool owns_page(sentinel::u64 page_address)
+    {
+        return sentinel::memory::is_page_aligned(page_address) 
+                && page_address<MAX_PHYSICAL_MEMORY;
+    }
+
+    bool is_reserved_page(sentinel::u64 page_address)
+    {
+        if(!owns_page(page_address))
+        {
+            return false;
+        }
+
+        const ReservedMemoryRegion* reserved_regions
+            =sentinel::memory::get_reserved_regions();
+
+        for(sentinel::u64 i=0; i<sentinel::memory::get_reserved_region_count(); i++)
+        {
+            if(page_address>=reserved_regions[i].start 
+                && page_address<reserved_regions[i].end)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     static void mark_all_regions_used()
