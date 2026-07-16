@@ -52,7 +52,7 @@ extern "C" void kernel_main(const sentinel::boot::BootInfo* boot_info)
         //sentinel::boot::print_memory_map(boot_info);
         ///sentinel::memory::print_kernel_memory_layout();
         //sentinel::memory::print_usable_regions();
-        sentinel::memory::print_reserved_regions();
+        //sentinel::memory::print_reserved_regions();
 
         sentinel::console::print_prompt();
 
