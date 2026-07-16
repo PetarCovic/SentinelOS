@@ -4,6 +4,10 @@
 
 namespace sentinel::terminal
 {
+    static void clear_row(sentinel::u64 row);
+    static void scroll_up();
+    static void advance_cursor();
+
     static int cursor_row;
     static int cursor_col;
 
@@ -14,7 +18,7 @@ namespace sentinel::terminal
     static volatile sentinel::u16* const VGA_BUFFER =
         (volatile sentinel::u16*)0xB8000;
 
-    static constexpr char* VERSION="0.1";
+    static constexpr const char* VERSION="0.1";
 
     void initialize()
     {
@@ -25,12 +29,15 @@ namespace sentinel::terminal
     {
         if(c=='\n')
         {
-            set_cursor(cursor_row+1, 0);
+            cursor_col=0;
+            cursor_row++;
 
             if(cursor_row>=VGA_HEIGHT)
             {
-                set_cursor(VGA_HEIGHT-1, cursor_col);
+                scroll_up();
             }
+
+            set_cursor(cursor_row, cursor_col);
 
             return;
         }
@@ -39,21 +46,8 @@ namespace sentinel::terminal
 
         VGA_BUFFER[index] = (vga_color << 8) | static_cast<sentinel::u16>(c);
         
-        int next_col=cursor_col+1;
-
-        if(next_col>=VGA_WIDTH)
-        {
-            set_cursor(cursor_row+1, 0);
-
-            if(cursor_row>=VGA_HEIGHT)
-            {
-                set_cursor(VGA_HEIGHT-1, cursor_col);
-            }
-        }     
-        else
-        {
-            set_cursor(cursor_row, cursor_col+1);
-        }
+        advance_cursor();
+        set_cursor(cursor_row, cursor_col);
     }
 
     void backspace()
@@ -203,7 +197,7 @@ namespace sentinel::terminal
         return cursor_col;
     }
 
-    char* get_version()
+    const char* get_version()
     {
         return VERSION;
     }
@@ -256,5 +250,44 @@ namespace sentinel::terminal
         sentinel::arch::x86_64::io::outb(VGA_CONTROL_PORT, VGA_CURSOR_HIGH_REGISTER);
         sentinel::arch::x86_64::io::outb(VGA_DATA_PORT, 
             static_cast<sentinel::u8>((position >> 8) & 0xFF));
+    }
+
+    static void clear_row(sentinel::u64 row)
+    {
+        for(sentinel::u64 col=0; col<VGA_WIDTH; col++)
+        {
+            VGA_BUFFER[row*VGA_WIDTH+col]=(vga_color << 8) | ' ';  
+        }
+    }
+
+    static void scroll_up()
+    {
+        for(sentinel::u64 row=1; row<VGA_HEIGHT; row++)
+        {
+            for(sentinel::u64 col=0; col<VGA_WIDTH; col++)
+            {
+                VGA_BUFFER[(row-1)*VGA_WIDTH+col]=VGA_BUFFER[row*VGA_WIDTH+col];
+            }
+        }
+
+        clear_row(VGA_HEIGHT-1);
+
+        cursor_row=VGA_HEIGHT-1;
+    }
+
+    static void advance_cursor()
+    {
+        cursor_col++;
+
+        if(cursor_col>=VGA_WIDTH)
+        {
+            cursor_col=0;
+            cursor_row++;
+        }
+
+        if(cursor_row>=VGA_HEIGHT)
+        {
+            scroll_up();
+        }
     }
 }
