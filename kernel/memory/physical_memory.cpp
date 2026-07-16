@@ -93,7 +93,7 @@ namespace sentinel::memory
 
         reserve_region(0x80000, 0x90000, "Kernel Stack");
 
-        reserve_region(0xB8004, 0xC0007, "VGA Text Buffer");
+        reserve_region(0xB8000, 0xC0000, "VGA Text Buffer");
     }
 
     sentinel::u32 get_usable_region_count()
@@ -186,6 +186,16 @@ namespace sentinel::memory
         reserved_regions[reserved_region_count].name=name;
 
         reserved_region_count++;
+    }
+
+    sentinel::u32 get_reserved_region_count()
+    {
+        return reserved_region_count;
+    }
+
+    const ReservedMemoryRegion* get_reserved_regions()
+    {
+        return reserved_regions;
     }
 
     void print_reserved_regions()

@@ -43,5 +43,9 @@ namespace sentinel::memory
 
     void reserve_region(sentinel::u64 start, sentinel::u64 end, const char*  name);
 
+    sentinel::u32 get_reserved_region_count();
+
+    const ReservedMemoryRegion* get_reserved_regions();
+
     void print_reserved_regions();
 }

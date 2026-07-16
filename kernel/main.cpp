@@ -7,6 +7,7 @@
 #include <sentinel/shell.hpp>
 #include <sentinel/boot/memory_map.hpp>
 #include <sentinel/memory/physical_memory.hpp>
+#include <sentinel/memory/physical_page_allocator.hpp>
 
 extern "C" void kernel_main(const sentinel::boot::BootInfo* boot_info)
 {
@@ -30,13 +31,14 @@ extern "C" void kernel_main(const sentinel::boot::BootInfo* boot_info)
     __asm__ volatile("sti");
 
     sentinel::memory::initialize(boot_info);
+    sentinel::memory::physical_page_allocator::initialize();
     sentinel::terminal::writeln("Memory Initialized");
 
     sentinel::boot::print_memory_map(boot_info);
     sentinel::memory::print_kernel_memory_layout();
     sentinel::memory::print_usable_regions();
     sentinel::memory::print_reserved_regions();
-
+    sentinel::memory::physical_page_allocator::print_stats();
 
     sentinel::console::print_prompt();
 
