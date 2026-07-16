@@ -53,6 +53,8 @@ extern "C" void kernel_main(const sentinel::boot::BootInfo* boot_info)
         sentinel::memory::print_usable_regions();
         sentinel::memory::print_reserved_regions();
 
+        sentinel::console::print_prompt();
+
         __asm__ volatile ("hlt");
     }
 }
