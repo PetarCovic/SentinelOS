@@ -21,8 +21,6 @@ namespace sentinel::memory::physical_page_allocator
 
     sentinel::u64 allocate_page();
 
-    sentinel::u64 free_page();
-
     void free_page(sentinel::u64 page_address);
 
     sentinel::u64 get_free_page_count();
