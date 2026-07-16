@@ -40,6 +40,15 @@ extern "C" void kernel_main(const sentinel::boot::BootInfo* boot_info)
     sentinel::memory::print_reserved_regions();
     sentinel::memory::physical_page_allocator::print_stats();
 
+    sentinel::u64 page=sentinel::memory::physical_page_allocator::allocate_page();
+
+    sentinel::terminal::write("Allocated page: ");
+    sentinel::terminal::writeln_hex(page);
+
+    sentinel::memory::physical_page_allocator::print_stats();
+    sentinel::memory::physical_page_allocator::free_page(page);
+    sentinel::memory::physical_page_allocator::print_stats();
+
     sentinel::console::print_prompt();
 
     while(true)

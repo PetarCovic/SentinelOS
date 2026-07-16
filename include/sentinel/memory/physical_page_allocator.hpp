@@ -18,4 +18,8 @@ namespace sentinel::memory::physical_page_allocator
 
     bool is_page_used(sentinel::u64 page_address);
     bool is_page_free(sentinel::u64 page_address);
+
+    sentinel::u64 allocate_page();
+
+    void free_page(sentinel::u64 page_address);
 }
