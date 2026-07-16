@@ -20,7 +20,7 @@ namespace sentinel::boot
         sentinel::u32 entry_count=boot_info->memory_map_entry_count;
         sentinel::terminal::writeln_u64(entry_count);
 
-        for(int i=0; i<entry_count; i++)
+        for(sentinel::u32 i=0; i<entry_count; i++)
         {
             MemoryMapEntry memory_map=boot_info->memory_map[i];
 

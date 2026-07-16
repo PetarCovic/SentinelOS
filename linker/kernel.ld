@@ -4,6 +4,8 @@ SECTIONS
 {
     . = 0x9000;
 
+    __kernel_start = .;
+
     .text :
     {
         *(.text*)
@@ -24,4 +26,7 @@ SECTIONS
         *(COMMON)
         *(.bss*)
     }
+
+    . = ALIGN(4096);
+    __kernel_end = .;
 }

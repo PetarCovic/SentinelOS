@@ -6,6 +6,7 @@
 #include <sentinel/console.hpp>
 #include <sentinel/shell.hpp>
 #include <sentinel/boot/memory_map.hpp>
+#include <sentinel/memory/physical_memory.hpp>
 
 extern "C" void kernel_main(const sentinel::boot::BootInfo* boot_info)
 {
@@ -44,6 +45,10 @@ extern "C" void kernel_main(const sentinel::boot::BootInfo* boot_info)
             sentinel::shell::execute_command(command);
             sentinel::console::print_prompt();
         }
+
+        sentinel::memory::print_kernel_memory_layout();
+        sentinel::memory::print_usable_regions();
+        sentinel::memory::print_reserved_regions();
 
         __asm__ volatile ("hlt");
     }

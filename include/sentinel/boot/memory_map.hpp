@@ -13,12 +13,6 @@ namespace sentinel::boot
         BAD_MEMORY          = 5,
     };
 
-    static constexpr sentinel::u32 E820_TYPE_USABLE = 1;
-    static constexpr sentinel::u32 E820_TYPE_RESERVED = 2;
-    static constexpr sentinel::u32 E820_TYPE_ACPI_RECLAIMABLE = 3;
-    static constexpr sentinel::u32 E820_TYPE_ACPI_NVS = 4;
-    static constexpr sentinel::u32 E820_TYPE_BAD_MEMORY = 5;
-
     static constexpr sentinel::u32 E820_ATTR_VALID = 1 << 0;
     static constexpr sentinel::u32 E820_ATTR_NON_VOLATILE = 1 << 1;
 
