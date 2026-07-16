@@ -5,7 +5,6 @@
 
 namespace sentinel::memory
 {
-    static constexpr sentinel::u32 PAGE_SIZE=4096;
     static constexpr sentinel::u64 MIN_ALLOCATABLE_ADDRESS=0x100000;
     static constexpr sentinel::u32 MAX_USABLE_REGIONS=32;
     static constexpr sentinel::u32 MAX_RESERVED_REGIONS=32;

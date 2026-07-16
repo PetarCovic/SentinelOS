@@ -2,6 +2,7 @@
 #include <sentinel/boot/memory_map.hpp>
 #include <sentinel/terminal.hpp>
 #include <sentinel/string.hpp>
+#include <sentinel/memory/page.hpp>
 
 extern "C" char __kernel_start;
 extern "C" char __kernel_end;
@@ -63,6 +64,14 @@ namespace sentinel::memory
                 break;
             }
 
+            region_start=sentinel::memory::align_page_up(region_start);
+            region_end=sentinel::memory::align_page_down(region_end);
+
+            if(region_start>=region_end)
+            {
+                continue;
+            }
+
             sentinel::u64 region_length=region_end-region_start;
 
             usable_regions[usable_region_count].start=region_start;
@@ -84,7 +93,7 @@ namespace sentinel::memory
 
         reserve_region(0x80000, 0x90000, "Kernel Stack");
 
-        reserve_region(0xB8000, 0xC0000, "VGA Text Buffer");
+        reserve_region(0xB8004, 0xC0007, "VGA Text Buffer");
     }
 
     sentinel::u32 get_usable_region_count()
@@ -154,6 +163,9 @@ namespace sentinel::memory
 
     void reserve_region(sentinel::u64 start, sentinel::u64 end, const char*  name)
     {
+        start=sentinel::memory::align_page_down(start);
+        end=sentinel::memory::align_page_up(end);
+
         if(start>=end)
         {
             return;
