@@ -46,6 +46,9 @@ extern "C" void kernel_main(const sentinel::boot::BootInfo* boot_info)
             sentinel::console::print_prompt();
         }
 
+        sentinel::memory::initialize(boot_info);
+        sentinel::terminal::writeln("Memory Initialized");
+
         sentinel::memory::print_kernel_memory_layout();
         sentinel::memory::print_usable_regions();
         sentinel::memory::print_reserved_regions();
