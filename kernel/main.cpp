@@ -37,6 +37,9 @@ extern "C" void kernel_main(const sentinel::boot::BootInfo* boot_info)
     sentinel::memory::print_usable_regions();
     sentinel::memory::print_reserved_regions();
 
+
+    sentinel::console::print_prompt();
+
     while(true)
     {
         sentinel::drivers::keyboard::KeyEvent event;
@@ -53,8 +56,6 @@ extern "C" void kernel_main(const sentinel::boot::BootInfo* boot_info)
             sentinel::shell::execute_command(command);
             sentinel::console::print_prompt();
         }
-
-        sentinel::console::print_prompt();
 
         __asm__ volatile ("hlt");
     }
