@@ -176,7 +176,7 @@ namespace sentinel::memory
             return;
         }
 
-        if(sentinel::string::isEmpty(name))
+        if(sentinel::string::is_empty(name))
         {
             name="RESERVED";
         }

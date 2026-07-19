@@ -8,13 +8,13 @@
 #include <sentinel/boot/memory_map.hpp>
 #include <sentinel/memory/physical_memory.hpp>
 #include <sentinel/memory/physical_page_allocator.hpp>
+#include <sentinel/memory/kernel_heap.hpp>
 
 extern "C" void kernel_main(const sentinel::boot::BootInfo* boot_info)
 {
     sentinel::terminal::initialize();
     sentinel::logger::log_info("SentinelOS Kernel Loaded");
     sentinel::logger::log_info("Terminal Initialized");
-    sentinel::boot::print_memory_map(boot_info);
 
     sentinel::arch::x86_64::idt::initialize();
     sentinel::logger::log_info("IDT Initialized.");
@@ -25,30 +25,18 @@ extern "C" void kernel_main(const sentinel::boot::BootInfo* boot_info)
     sentinel::drivers::keyboard::initialize();
     sentinel::logger::log_info("Keyboard Initialized");
 
-    sentinel::logger::log_info("Initializing Console");
-    sentinel::logger::log_info("Enabling Interrupts");
     sentinel::console::initialize();
-    __asm__ volatile("sti");
+    sentinel::logger::log_info("Console Initialized");
 
     sentinel::memory::initialize(boot_info);
     sentinel::memory::physical_page_allocator::initialize();
-    sentinel::terminal::writeln("Memory Initialized");
+    sentinel::logger::log_info("Memory Initialized");
 
-    sentinel::boot::print_memory_map(boot_info);
-    sentinel::memory::print_kernel_memory_layout();
-    sentinel::memory::print_usable_regions();
-    sentinel::memory::print_reserved_regions();
-    sentinel::memory::physical_page_allocator::print_stats();
+    sentinel::memory::kernel_heap::initialize();
+    sentinel::logger::log_info("Kernel Heap Initialized");
 
-    sentinel::u64 page=sentinel::memory::physical_page_allocator::allocate_page();
-
-    sentinel::terminal::write("Allocated page: ");
-    sentinel::terminal::writeln_hex(page);
-
-    sentinel::memory::physical_page_allocator::print_stats();
-    sentinel::memory::physical_page_allocator::free_page(page);
-    sentinel::memory::physical_page_allocator::print_stats();
-
+    sentinel::logger::log_info("Enabling Interrupts");
+    __asm__ volatile("sti");
     sentinel::console::print_prompt();
 
     while(true)

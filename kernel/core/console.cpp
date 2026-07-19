@@ -304,7 +304,7 @@ namespace sentinel::console
 
     static void save_history_command()
     {
-        if(sentinel::string::isEmpty(command_buffer))
+        if(sentinel::string::is_empty(command_buffer))
         {
             return;
         }

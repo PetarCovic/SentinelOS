@@ -9,6 +9,12 @@ namespace sentinel::memory::physical_page_allocator
     static constexpr sentinel::u64 TOTAL_PAGES=MAX_PHYSICAL_MEMORY/PAGE_SIZE;
     static constexpr sentinel::u64 BITMAP_SIZE_BYTES=TOTAL_PAGES/8;
 
+    struct PageMetadata
+    {
+        bool allocated;
+        bool reserved;
+    };
+
     void initialize();
 
     void print_stats();
@@ -21,7 +27,11 @@ namespace sentinel::memory::physical_page_allocator
 
     sentinel::u64 allocate_page();
 
+    sentinel::u64 allocate_contiguous_pages(sentinel::u64 page_count);
+
     void free_page(sentinel::u64 page_address);
+
+    void  free_contiguous_pages(sentinel::u64 start_address, sentinel::u64 page_count);
 
     sentinel::u64 get_free_page_count();
 
@@ -32,4 +42,8 @@ namespace sentinel::memory::physical_page_allocator
     bool owns_page(sentinel::u64 page_address);
 
     bool is_reserved_page(sentinel::u64 page_address);
+
+    bool is_metadata_allocated(sentinel::u64 page_address);
+
+    bool is_metadata_reserved(sentinel::u64 page_address);
 }

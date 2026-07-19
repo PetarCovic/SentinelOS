@@ -6,15 +6,19 @@
 
 namespace sentinel::memory::physical_page_allocator
 {
+    static void init_metadata();
+
     static void mark_all_regions_used();
     static void mark_region_free(sentinel::u64 start, sentinel::u64 end);
     static void mark_region_used(sentinel::u64 start, sentinel::u64 end);
 
     static sentinel::u8 page_bitmap[BITMAP_SIZE_BYTES];
+    static PageMetadata page_metadata[TOTAL_PAGES];
     
     void initialize()
     {
         mark_all_regions_used();
+        init_metadata();
 
         const PhysicalMemoryRegion* usable_regions
             =sentinel::memory::get_usable_regions();
@@ -72,6 +76,7 @@ namespace sentinel::memory::physical_page_allocator
         sentinel::u8 mask=static_cast<sentinel::u8>(1 << bit_index);
 
         page_bitmap[byte_index] |= mask;
+        page_metadata[page_index].allocated=true;
     }
 
     void mark_page_free(sentinel::u64 page_address)
@@ -83,12 +88,24 @@ namespace sentinel::memory::physical_page_allocator
             return;
         }
 
+        if(is_metadata_reserved(page_address))
+        {
+            return;
+        }
+
+        if(!is_metadata_allocated(page_address))
+        {
+            return;
+        }
+
         sentinel::u64 byte_index=page_index/8;
         sentinel::u64 bit_index=page_index%8;
 
         sentinel::u8 mask=static_cast<sentinel::u8>(1 << bit_index);
 
         page_bitmap[byte_index] &= static_cast<sentinel::u8>(~mask);
+
+        page_metadata[page_index].allocated=false;
     }
 
     bool is_page_used(sentinel::u64 page_address)
@@ -129,6 +146,47 @@ namespace sentinel::memory::physical_page_allocator
         return 0;
     }
 
+    sentinel::u64 allocate_contiguous_pages(sentinel::u64 page_count)
+    {
+        if(page_count==0)
+        {
+            return 0;
+        }
+
+        sentinel::u64 current_run_start=0;
+        sentinel::u64 current_run_length=0;
+
+        for(sentinel::u64 i=0; i<TOTAL_PAGES; i++)
+        {
+            if(is_page_free(i*PAGE_SIZE))
+            {
+                if(current_run_length==0)
+                {
+                    current_run_start=i*PAGE_SIZE;
+                }
+
+                current_run_length++;
+
+                if(current_run_length==page_count)
+                {
+                    for(sentinel::u64 j=0; j<page_count; j++)
+                    {
+                        mark_page_used(current_run_start+(j*PAGE_SIZE));
+                    }
+
+                    return current_run_start;
+                }
+            }
+            else
+            {
+                current_run_start=0;
+                current_run_length=0;
+            }
+        }
+
+        return 0;
+    }
+
     void free_page(sentinel::u64 page_address)
     {
         if(!owns_page(page_address))
@@ -142,6 +200,24 @@ namespace sentinel::memory::physical_page_allocator
         }
 
         mark_page_free(page_address);
+    }
+
+    void free_contiguous_pages(sentinel::u64 start_address, sentinel::u64 page_count)
+    {
+        if(page_count==0)
+        {
+            return;
+        }
+
+        if(!sentinel::memory::is_page_aligned(start_address))
+        {
+            return;
+        }
+        
+        for(sentinel::u64 i=0; i<page_count; i++)
+        {
+            free_page(start_address+(PAGE_SIZE*i));
+        }
     }
 
     sentinel::u64 get_free_page_count()
@@ -207,6 +283,15 @@ namespace sentinel::memory::physical_page_allocator
         return false;
     }
 
+    static void init_metadata()
+    {
+        for(sentinel::u64 i=0; i<TOTAL_PAGES; i++)
+        {
+            page_metadata[i].allocated=true;
+            page_metadata[i].reserved=false;
+        }
+    }
+
     static void mark_all_regions_used()
     {
         for(sentinel::u64 i=0; i<BITMAP_SIZE_BYTES; i++)
@@ -228,6 +313,18 @@ namespace sentinel::memory::physical_page_allocator
         for(sentinel::u64 address=start; address<end; address+=PAGE_SIZE)
         {
             mark_page_used(address);
+            
+            page_metadata[address/PAGE_SIZE].reserved=true;
         }
+    }
+
+    bool is_metadata_allocated(sentinel::u64 page_address)
+    {
+        return page_metadata[page_address/PAGE_SIZE].allocated;
+    }
+
+    bool is_metadata_reserved(sentinel::u64 page_address)
+    {
+        return page_metadata[page_address/PAGE_SIZE].reserved;
     }
 }
